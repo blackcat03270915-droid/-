@@ -6,7 +6,6 @@
     <title>猫叶的塔罗工作台 - 塔罗占卜</title>
     <style>
         :root {
-            /* 1. 更新为奶棕色系背景变量 */
             --bg-light: #efe9e4; 
             --bg-grad: #e2d3c5;
             --accent: #bda285; 
@@ -21,7 +20,6 @@
         
         body {
             background: var(--bg-light); 
-            /* 背景加上奶棕色晕染，中心保留微白以凸显卡牌 */
             background-image: radial-gradient(circle at 50% 50%, #fdfbf8 0%, var(--bg-grad) 100%);
             margin: 0; padding: 0; height: 100dvh; width: 100vw; 
             overflow: hidden; touch-action: none; position: fixed;
@@ -33,76 +31,115 @@
         
         .header-bar {
             height: 60px; display: flex; justify-content: space-between; align-items: center;
-            /* 保持上方栏为白色半透明磨砂质感 */
             padding: 0 20px; background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(189, 162, 133, 0.15); z-index: 10000; position: relative;
         }
-        
-        /* ================= 更新：黑猫月牙印章样式 ================= */
-        .stamp-title {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1.5px solid var(--text-main);
-            border-radius: 20px; /* 胶囊圆角印章 */
-            padding: 6px 14px;
-            color: var(--text-main);
-            transform: rotate(-3deg);
-            background: #fff;
-            /* 利用多重内阴影制作出复古印章的双线压花质感 */
-            box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3.5px var(--text-main), 0 4px 10px rgba(122, 110, 98, 0.08);
-            opacity: 0; 
-            pointer-events: none;
-            gap: 2px;
-        }
-        .stamp-icon {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .stamp-sub {
-            font-size: 10px;
-            font-family: 'Helvetica Neue', Helvetica, sans-serif;
-            font-weight: 900;
-            letter-spacing: 1px;
-            color: var(--text-main);
-        }
-        @keyframes stampDrop {
-            0% { transform: scale(1.6) rotate(-15deg); opacity: 0; }
-            60% { transform: scale(0.9) rotate(-3deg); opacity: 1; }
-            80% { transform: scale(1.05) rotate(-3deg); opacity: 1; }
-            100% { transform: scale(1) rotate(-3deg); opacity: 1; }
-        }
-        .stamp-title.animate {
-            animation: stampDrop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
-        }
-        /* ========================================================= */
 
+        /* ================= 新增：顶部白色的复古花边边角美化 ================= */
+        .header-bg-decor {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 72px; /* 高度延伸出遮罩波浪空间 */
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.95;
+            /* 巧用遮罩切出向下悬垂的圆润波浪边 */
+            -webkit-mask-image: linear-gradient(black, black), radial-gradient(circle at 12px 0px, black 12px, transparent 12.5px);
+            -webkit-mask-size: 100% 60px, 24px 12px;
+            -webkit-mask-position: top left, bottom left;
+            -webkit-mask-repeat: no-repeat, repeat-x;
+            mask-image: linear-gradient(black, black), radial-gradient(circle at 12px 0px, black 12px, transparent 12.5px);
+            mask-size: 100% 60px, 24px 12px;
+            mask-position: top left, bottom left;
+            mask-repeat: no-repeat, repeat-x;
+        }
+
+        .title-badge {
+            font-size: 14px;
+            font-weight: 900;
+            position: relative;
+            z-index: 1;
+            background: rgba(253, 251, 247, 0.95);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 8px; /* 带有微小弧度的手工贴纸质感 */
+            box-shadow: 0 2px 8px rgba(122, 110, 98, 0.08), inset 0 0 0 1px rgba(189, 162, 133, 0.3);
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        /* ================================================================ */
+        
         .nav-btn {
             background: #fff; border: 1px solid var(--accent-dim); 
             color: var(--text-main); padding: 5px 12px; border-radius: 12px; font-size: 10px;
             cursor: pointer; transition: all 0.2s;
             box-shadow: 0 2px 8px rgba(122, 110, 98, 0.06);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            position: relative; z-index: 1; /* 确保按钮在花边上方 */
         }
         .nav-btn:active { background: var(--bg-grad); transform: scale(0.95); }
         .nav-btn svg { width: 18px; height: 18px; opacity: 0.85; stroke-width: 2.5; }
 
         #sidebar {
-            position: absolute; left: 12px; top: 70px; bottom: 120px;
-            display: flex; flex-direction: column; justify-content: center; gap: 8px;
-            z-index: 10000; pointer-events: none; 
-        }
-        #action-sidebar {
-            position: absolute; right: 12px; top: 70px; bottom: 120px;
-            display: flex; flex-direction: column; justify-content: center; gap: 8px;
+            position: absolute; left: 12px; top: 70px;
+            display: flex; flex-direction: column; justify-content: flex-start; gap: 8px;
             z-index: 10000; pointer-events: none; 
         }
         
+        #sidebar-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none; 
+            max-height: 0;
+            opacity: 0;
+            transform: translateX(-15px);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+        }
+        #sidebar-filters::-webkit-scrollbar { display: none; }
+        
+        #sidebar-filters.open {
+            max-height: calc(100dvh - 140px);
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            margin-top: 4px;
+        }
+
+        #action-sidebar {
+            position: absolute; right: 12px; top: 70px;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-end; gap: 8px;
+            z-index: 10000; pointer-events: none; 
+        }
+        
+        #action-sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            max-height: 0;
+            opacity: 0;
+            transform: translateX(15px);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+        }
+        #action-sidebar-menu::-webkit-scrollbar { display: none; }
+
+        #action-sidebar-menu.open {
+            max-height: calc(100dvh - 140px);
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            margin-top: 4px;
+        }
+
         .sidebar-btn {
             pointer-events: auto; 
             background: rgba(253, 251, 247, 0.85); 
@@ -118,7 +155,7 @@
         }
         .sidebar-btn.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
         .sidebar-btn:active { transform: scale(0.92); }
-        .sidebar-btn svg { width: 17px; height: 17px; opacity: 0.9; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+        .sidebar-btn svg { width: 22px; height: 22px; opacity: 0.9; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 
         #hint { position: absolute; top: 75px; width: 100%; text-align: center; font-size: 12px; color: #a3998f; pointer-events: none; opacity: 0.9; z-index: 2000; letter-spacing: 1px;}
         
@@ -365,16 +402,33 @@
 </head>
 <body>
 
+    <!-- 全局 SVG 纹理定义，避免因 display:none 导致引用失效 -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <defs>
+            <pattern id="plaid-pattern" width="60" height="60" patternUnits="userSpaceOnUse">
+                <rect width="60" height="60" fill="#fdfbf8" />
+                <rect width="22" height="60" fill="#d4c3b3" opacity="0.6" />
+                <rect width="60" height="22" fill="#d4c3b3" opacity="0.6" />
+                <rect width="2" height="60" x="38" fill="#a89380" opacity="0.4" />
+                <rect width="2" height="60" x="48" fill="#a89380" opacity="0.4" />
+                <rect width="60" height="2" y="38" fill="#a89380" opacity="0.4" />
+                <rect width="60" height="2" y="48" fill="#a89380" opacity="0.4" />
+            </pattern>
+        </defs>
+    </svg>
+
     <!-- 视图 1：工作台 -->
     <div id="workbench-view" class="view-container">
         <div class="header-bar">
-            <!-- 3. 动态印章 Logo 结构 -->
-            <div id="workbench-title" class="stamp-title">
-                <div class="stamp-icon" style="width: auto; font-size: 15px; letter-spacing: 2px;">
-                    🐈‍⬛🌙🔮
-                </div>
-                <div class="stamp-sub">♈ · XVIII</div>
+            <!-- 顶栏花边美化：花色格子纹理铺满全层，底部呈现波浪形 -->
+            <div class="header-bg-decor">
+                <svg width="100%" height="100%" aria-hidden="true" focusable="false">
+                    <rect width="100%" height="100%" fill="url(#plaid-pattern)" />
+                </svg>
             </div>
+            
+            <!-- 精简标题，使用奶油方格贴纸样式突出 -->
+            <div class="title-badge">✧ 链接潜意识。</div>
             
             <button class="nav-btn" onclick="toggleView('admin')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -383,58 +437,57 @@
         </div>
         
         <div id="sidebar">
-            <button class="sidebar-btn active" data-filter="all" onclick="setFilter('all')">
-                <svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="16" rx="2"/><path d="M6 2h14v16H6z"/></svg>
-                <span>全部</span>
+            <button class="sidebar-btn" id="filter-toggle-btn" onclick="toggleSidebarMenu()" style="pointer-events: auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             </button>
-            <button class="sidebar-btn" data-filter="major" onclick="setFilter('major')">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v4 M12 18v4 M2 12h4 M18 12h4 M4.93 4.93l2.83 2.83 M16.24 16.24l2.83 2.83 M4.93 19.07l2.83-2.83 M16.24 7.76l2.83-2.83"/></svg>
-                <span>大阿卡纳</span>
-            </button>
-            <button class="sidebar-btn" data-filter="minor" onclick="setFilter('minor')">
-                <svg viewBox="0 0 24 24"><polygon points="12 2 22 20 2 20"/></svg>
-                <span>小阿卡纳</span>
-            </button>
-            <button class="sidebar-btn" data-filter="wands" onclick="setFilter('wands')">
-                <svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/><path d="M16 4h4v4 M4 20h4v-4"/></svg>
-                <span>权杖</span>
-            </button>
-            <button class="sidebar-btn" data-filter="cups" onclick="setFilter('cups')">
-                <svg viewBox="0 0 24 24"><path d="M7 3h10v6c0 2.76-2.24 5-5 5s-5-2.24-5-5V3z"/><line x1="12" y1="14" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
-                <span>圣杯</span>
-            </button>
-            <button class="sidebar-btn" data-filter="swords" onclick="setFilter('swords')">
-                <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="16"/><line x1="8" y1="16" x2="16" y2="16"/><line x1="12" y1="16" x2="12" y2="22"/></svg>
-                <span>宝剑</span>
-            </button>
-            <button class="sidebar-btn" data-filter="pentacles" onclick="setFilter('pentacles')">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="12 5 14.5 10 20 10 16 13.5 17.5 19 12 15.5 6.5 19 8 13.5 4 10 9.5 10"/></svg>
-                <span>星币</span>
-            </button>
+            
+            <div id="sidebar-filters">
+                <button class="sidebar-btn active" data-filter="all" onclick="setFilter('all')">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="16" rx="2"/><path d="M6 2h14v16H6z"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="major" onclick="setFilter('major')">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v4 M12 18v4 M2 12h4 M18 12h4 M4.93 4.93l2.83 2.83 M16.24 16.24l2.83 2.83 M4.93 19.07l2.83-2.83 M16.24 7.76l2.83-2.83"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="minor" onclick="setFilter('minor')">
+                    <svg viewBox="0 0 24 24"><polygon points="12 2 22 20 2 20"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="wands" onclick="setFilter('wands')">
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/><path d="M16 4h4v4 M4 20h4v-4"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="cups" onclick="setFilter('cups')">
+                    <svg viewBox="0 0 24 24"><path d="M7 3h10v6c0 2.76-2.24 5-5 5s-5-2.24-5-5V3z"/><line x1="12" y1="14" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="swords" onclick="setFilter('swords')">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="16"/><line x1="8" y1="16" x2="16" y2="16"/><line x1="12" y1="16" x2="12" y2="22"/></svg>
+                </button>
+                <button class="sidebar-btn" data-filter="pentacles" onclick="setFilter('pentacles')">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="12 5 14.5 10 20 10 16 13.5 17.5 19 12 15.5 6.5 19 8 13.5 4 10 9.5 10"/></svg>
+                </button>
+            </div>
         </div>
 
         <div id="action-sidebar">
-            <button class="sidebar-btn" onclick="toggleCardSize()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                <span id="size-btn-text">大小:中</span>
+            <button class="sidebar-btn" id="action-toggle-btn" onclick="toggleActionMenu()" style="pointer-events: auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
             </button>
             
-            <button class="sidebar-btn" onclick="ritualShuffle()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-                <span>洗牌</span>
-            </button>
-            <button class="sidebar-btn" onclick="ritualCut()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="12" height="12" rx="2"></rect><rect x="9" y="2" width="12" height="12" rx="2"></rect></svg>
-                <span>切牌</span>
-            </button>
-            <button class="sidebar-btn" onclick="ritualFan()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="4" height="16" rx="1"></rect><rect x="10" y="4" width="4" height="16" rx="1"></rect><rect x="17" y="4" width="4" height="16" rx="1"></rect></svg>
-                <span>铺开</span>
-            </button>
-            <button class="sidebar-btn" onclick="ritualCollect()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span>收牌</span>
-            </button>
+            <div id="action-sidebar-menu">
+                <button class="sidebar-btn" onclick="toggleCardSize()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                </button>
+                <button class="sidebar-btn" onclick="ritualShuffle()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                </button>
+                <button class="sidebar-btn" onclick="ritualCut()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="12" height="12" rx="2"></rect><rect x="9" y="2" width="12" height="12" rx="2"></rect></svg>
+                </button>
+                <button class="sidebar-btn" onclick="ritualFan()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="4" height="16" rx="1"></rect><rect x="10" y="4" width="4" height="16" rx="1"></rect><rect x="17" y="4" width="4" height="16" rx="1"></rect></svg>
+                </button>
+                <button class="sidebar-btn" onclick="ritualCollect()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+            </div>
         </div>
 
         <div id="hint">左右滑动浏览牌阵 · 向上拖拽抽牌</div>
@@ -446,8 +499,15 @@
     <!-- 视图 2：后台管理 -->
     <div id="admin-view" class="view-container" style="display: none;">
         <div class="header-bar">
-            <div class="title" style="font-size: 15px; font-weight: bold;">✧ 后台管理</div>
-            <div style="display: flex; gap: 8px;">
+            <!-- 顶栏花边美化：后台也铺上同样的格子波浪 -->
+            <div class="header-bg-decor">
+                <svg width="100%" height="100%" aria-hidden="true" focusable="false">
+                    <rect width="100%" height="100%" fill="url(#plaid-pattern)" />
+                </svg>
+            </div>
+            
+            <div class="title-badge">✧ 后台管理</div>
+            <div style="display: flex; gap: 8px; position: relative; z-index: 1;">
                 <button id="admin-back-btn" class="nav-btn" onclick="closeEditView()" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>返回列表</span>
@@ -545,16 +605,6 @@
     </div>
 
     <script>
-        // ================= 触发印章动效逻辑 =================
-        function triggerStampAnimation() {
-            const titleEl = document.getElementById('workbench-title');
-            if (titleEl) {
-                titleEl.classList.remove('animate');
-                void titleEl.offsetWidth; // 触发重绘以重新播放动画
-                titleEl.classList.add('animate');
-            }
-        }
-
         let pendingDeleteId = null;
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -575,7 +625,6 @@
             } else {
                 document.getElementById('workbench-view').style.display = 'block';
                 document.getElementById('admin-view').style.display = 'none';
-                triggerStampAnimation(); // 从后台返回时，重新播放印章盖下的动画
             }
         }
 
@@ -591,9 +640,25 @@
         const TOTAL = 78; 
         const SPACING = 16; 
         let TOTAL_W = (TOTAL - 1) * SPACING; 
+
+        // 你的配置作为网页的“出厂设置”
+        const defaultFactoryCode = "eyJuYW1lIjoi57uP5YW457u054m5IiwiY2FyZHMiOlsiMOaEmuS6ui5wbmciLCIx6a2U5pyv5biILnBuZyIsIjLlpbPnpa3lj7gucG5nIiwiM+Wls+eahy5wbmciLCI05Zu9546LLnBuZyIsIjXmlZnnmocucG5nIiwiNuaBi+S6ui5wbmciLCI35oiY6L2mLnBuZyIsIjjlipvph48ucG5nIiwiOemakOWjqy5wbmciLCIxMOWRvei/kOS5i+i9ri5wbmciLCIxMeato+S5iS5wbmciLCIxMuWQiuS6ui5wbmciLCIxM+atu+elni5wbmciLCIxNOiKguWIti5wbmciLCIxNeaBtumtlC5wbmciLCIxNumrmOWhlC5wbmciLCIxN+aYn+aYny5wbmciLCIxOOaciOS6ri5wbmciLCIxOeWkqumYsy5wbmciLCIyMOWuoeWIpC5wbmciLCIyMeS4lueVjC5wbmciLCLmnYPmnZbkuIAucG5nIiwi5p2D5p2W5LqMLnBuZyIsIuadg+adluS4iS5wbmciLCLmnYPmnZblm5sucG5nIiwi5p2D5p2W5LqULnBuZyIsIuadg+adlueJjOWFrS5wbmciLCLmnYPmnZbniYzkuIMucG5nIiwi5p2D5p2W54mM5YWrLnBuZyIsIuadg+adlueJjOS5nS5wbmciLCLmnYPmnZbniYzljYEucG5nIiwi5p2D5p2W5L6N5LuOLnBuZyIsIuadg+adlumqkeWjqy5wbmciLCLmnYPmnZblpbPnmocucG5nIiwi5p2D5p2W5Zu9546LLnBuZyIsIuWco+adr+S4gC5wbmciLCLlnKPmna/kuowucG5nIiwi5Zyj5p2v5LiJLnBuZyIsIuWco+adr+Wbmy5wbmciLCLlnKPmna/kupQucG5nIiwi5Zyj5p2v54mM5YWtLnBuZyIsIuWco+adr+eJjOS4gy5wbmciLCIiLCLlnKPmna/niYzkuZ0ucG5nIiwi5Zyj5p2v54mM5Y2BLnBuZyIsIuWco+adr+S+jeS7ji5wbmciLCLlnKPmna/pqpHlo6sucG5nIiwi5Zyj5p2v5aWz55qHLnBuZyIsIuWco+adr+WbveeOiy5wbmciLCLlrp3liZHkuIAucG5nIiwi5a6d5YmR5LqMLnBuZyIsIuWuneWJkeS4iS5wbmciLCLlrp3liZHlm5sucG5nIiwi5a6d5YmR5LqULnBuZyIsIuWuneWJkeeJjOWFrS5wbmciLCLlrp3liZHniYzkuIMucG5nIiwi5a6d5YmR54mM5YWrLnBuZyIsIuWuneWJkeeJjOS5nS5wbmciLCLlrp3liZHniYzljYEucG5nIiwi5a6d5YmR5L6N5LuOLnBuZyIsIuWuneWJkemqkeWjqy5wbmciLCLlrp3liZHlpbPnmocucG5nIiwi5a6d5YmR5Zu9546LLnBuZyIsIuaYn+W4geS4gC5wbmciLCLmmJ/luIHkuowucG5nIiwi5pif5biB5LiJLnBuZyIsIuaYn+W4geWbmy5wbmciLCLmmJ/luIHkupQucG5nIiwi5pif5biB54mM5YWtLnBuZyIsIuaYn+W4geeJjOS4gy5wbmciLCLmmJ/luIHniYzlhasucG5nIiwi5pif5biB54mM5LmdLnBuZyIsIuaYn+W4geeJjOWNgS5wbmciLCLmmJ/luIHkvo3ku44ucG5nIiwi5pif5biB6aqR5aOrLnBuZyIsIuaYn+W4geWls+eahy5wbmciLCLmmJ/luIHlm73njosucG5nIl19";
         
+        let parsedDefaultCards = new Array(TOTAL).fill("");
+        let parsedDefaultName = "默认牌组";
+        
+        try {
+            const parsedData = JSON.parse(decodeURIComponent(escape(atob(defaultFactoryCode))));
+            if (parsedData && parsedData.name && Array.isArray(parsedData.cards) && parsedData.cards.length === TOTAL) {
+                parsedDefaultName = parsedData.name;
+                parsedDefaultCards = parsedData.cards;
+            }
+        } catch (e) {
+            console.error("出厂配置解析失败", e);
+        }
+
         let decks = [
-            { id: 1, name: "默认牌组", cards: new Array(TOTAL).fill("") }
+            { id: 1, name: parsedDefaultName, cards: parsedDefaultCards }
         ];
         let activeDeckId = 1; 
         
@@ -623,8 +688,32 @@
             sizeLevel = (sizeLevel + 1) % 3; 
             document.documentElement.style.setProperty('--card-w', sizeOptions[sizeLevel].w + 'px');
             document.documentElement.style.setProperty('--card-h', sizeOptions[sizeLevel].h + 'px');
-            const btnSpan = document.getElementById('size-btn-text');
-            if (btnSpan) btnSpan.innerText = '大小:' + sizeOptions[sizeLevel].label;
+        }
+
+        function toggleSidebarMenu() {
+            const filters = document.getElementById('sidebar-filters');
+            filters.classList.toggle('open');
+            const btn = document.getElementById('filter-toggle-btn');
+            if (filters.classList.contains('open')) {
+                btn.style.background = 'var(--text-main)';
+                btn.style.color = '#fff';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+        }
+
+        function toggleActionMenu() {
+            const menu = document.getElementById('action-sidebar-menu');
+            menu.classList.toggle('open');
+            const btn = document.getElementById('action-toggle-btn');
+            if (menu.classList.contains('open')) {
+                btn.style.background = 'var(--text-main)';
+                btn.style.color = '#fff';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+            }
         }
 
         function init() {
@@ -688,8 +777,6 @@
             setupEvents();
             ritualFan();
             requestAnimationFrame(renderLoop);
-            
-            triggerStampAnimation(); // 初次加载时播放印章动画
         }
 
         function renderDeckList() {
@@ -799,7 +886,11 @@
                 const imgSrc = deck.cards[i] || '';
                 const cardImg = obj.el.querySelector('.card-image');
                 const cardName = obj.el.querySelector('.name');
-                if (imgSrc) { cardImg.src = imgSrc; cardImg.style.display = 'block'; cardName.style.display = 'none'; } 
+                if (imgSrc) { 
+                    cardImg.src = imgSrc; 
+                    cardImg.style.display = 'block'; 
+                    cardName.style.display = 'none'; 
+                } 
                 else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
             });
             if (btnElement) {
@@ -849,7 +940,11 @@
                     if (deckId === activeDeckId) {
                         const cardImg = cardObjs[i].el.querySelector('.card-image');
                         const cardName = cardObjs[i].el.querySelector('.name');
-                        if (newUrl) { cardImg.src = newUrl; cardImg.style.display = 'block'; cardName.style.display = 'none'; } 
+                        if (newUrl) { 
+                            cardImg.src = newUrl; 
+                            cardImg.style.display = 'block'; 
+                            cardName.style.display = 'none'; 
+                        } 
                         else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
                     }
                     const originalText = btnEl.innerText;
@@ -869,7 +964,7 @@
 
         function setFilter(filterType) {
             currentFilter = filterType;
-            document.querySelectorAll('#sidebar .sidebar-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.filter === filterType); });
+            document.querySelectorAll('#sidebar-filters .sidebar-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.filter === filterType); });
             cardObjs.forEach(o => {
                 if (o.status === 'desktop' || o.status === 'returning') return; 
                 if (isMatch(o, filterType)) { if (o.status === 'hidden') { o.status = 'fan'; o.el.style.display = 'flex'; } } 
@@ -900,7 +995,6 @@
                     
                     const dist = Math.abs(renderX);
                     
-                    /* 透明度护航：同上，使得铺开时卡牌保持实质感 */
                     obj.el.style.opacity = Math.max(0, 3.0 - dist / (window.innerWidth * 0.5));
                     
                     obj.el.style.zIndex = Math.floor(1000 + obj.baseX);
