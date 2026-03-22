@@ -1404,8 +1404,9 @@
             // 渲染对应的牌意背板
             renderMeaningPanel(cardObj.name, isReversed);
             const cardImg = cardObj.el.querySelector('.card-image');
-            if (cardImg.src && cardImg.style.display !== 'none') {
-                imgEl.src = cardImg.src;
+            const actualSrc = cardImg.dataset.src || cardImg.src; // 拿藏好的真实地址
+if (actualSrc && cardImg.style.display !== 'none') {
+    imgEl.src = actualSrc; // 无论桌面上有没有下载，放大看的时候立刻下载
                 imgEl.style.display = 'block';
                 nameEl.style.display = 'none';
             } else {
@@ -1449,7 +1450,7 @@
                     <div class="card-inner">
                         <div class="card-back"><div class="card-index"></div></div>
                         <div class="card-front">
-                            <img class="card-image" src="${imgSrc}" style="display: ${imgStyle};" alt="${tarotData[i]}">
+                            <img class="card-image" data-src="${imgSrc}" src="" style="display: ${imgStyle};" alt="${tarotData[i]}">
                             <div class="name" style="display: ${nameStyle};">${tarotData[i]}</div>
                         </div>
                     </div>
@@ -1611,10 +1612,16 @@
                     const cardName = obj.el.querySelector('.name');
                     
                     if (imgSrc) { 
-                        cardImg.src = imgSrc; 
-                        cardImg.style.display = 'block'; 
-                        cardName.style.display = 'none'; 
-                    } else { 
+    cardImg.dataset.src = imgSrc; // 只悄悄记住新牌的地址
+    // 如果这张牌正好翻开在桌面上，就立刻换新图；如果盖着，就保持空白不下载
+    if (obj.el.classList.contains('is-flipped')) {
+        cardImg.src = imgSrc;
+    } else {
+        cardImg.src = ''; 
+    }
+    cardImg.style.display = 'block'; 
+    cardName.style.display = 'none'; 
+}else { 
                         cardImg.src = ''; 
                         cardImg.style.display = 'none'; 
                         cardName.style.display = 'block'; 
@@ -1890,7 +1897,14 @@
                 
                 if (interactMode === 'dragging_desktop' && dist < 5) {
                     if (!dragTarget.el.classList.contains('is-flipped')) {
-                        dragTarget.el.classList.add('is-flipped');
+    dragTarget.el.classList.add('is-flipped');
+    
+    // ======= 懒加载点火代码 =======
+    const imgEl = dragTarget.el.querySelector('.card-image');
+    if (imgEl && imgEl.dataset.src && !imgEl.src.includes(imgEl.dataset.src)) {
+        imgEl.src = imgEl.dataset.src; // 翻牌瞬间，把藏好的地址拿出来下载！
+    }
+    // ============================
                     } else {
                         openZoomModal(dragTarget);
                     }
@@ -1950,7 +1964,7 @@
                 else { obj.status = 'hidden'; obj.el.style.display = 'none'; obj.el.classList.remove('is-fanned'); track.appendChild(obj.el); }
             }, 500);
         }
-       // ================= 新增：预加载引擎逻辑（障眼法仪式版 - 极致秒开） =================
+       // ================= 终极优化：懒加载 + 仪式感版 =================
         function preloadDeckAndRun(deckCards, onComplete) {
             const loader = document.getElementById('magic-loader');
             const loaderText = document.getElementById('loader-text');
@@ -1958,26 +1972,26 @@
             loaderText.innerText = "正在链接潜意识...";
             requestAnimationFrame(() => { loader.style.opacity = '1'; });
             
-            // 绝不等待！瞬间在幕布后面把 78 张牌铺好，让浏览器自己去后台慢慢下图片
+            // 【核心】：直接铺场，不准等待下载
             onComplete();
 
-            // 障眼法：让魔法阵转 1.5 秒，营造一种高级的仪式感，然后直接拉开幕布！
+            // 仪式感计时器：1.2秒后揭幕
             setTimeout(() => {
-                loaderText.innerText = "能量同步完成 100%";
+                loaderText.innerText = "能量通道已开启";
                 setTimeout(() => {
                     loader.style.opacity = '0';
                     setTimeout(() => { loader.style.display = 'none'; }, 600);
-                }, 300);
+                }, 400);
             }, 1200); 
         }
 
-        // 接管网页启动
+        // 接管启动
         window.onload = () => {
             const currentDeck = decks.find(d => d.id === activeDeckId) || decks[0];
             preloadDeckAndRun(currentDeck.cards, () => {
-                init();
+                init(); 
             });
         };
-        // ======================================================= </script>
+        // ======================================================== </script>
 </body>
 </html>
