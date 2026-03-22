@@ -1598,7 +1598,7 @@
                 renderDeckList(); pendingDeleteId = null; closeModal('modal-delete');
             }
         }
-        function applyDeck(id, btnElement) {
+      function applyDeck(id, btnElement) {
             if (activeDeckId === id) return; 
             const deck = decks.find(d => d.id === id);
             
@@ -1609,31 +1609,30 @@
                     const imgSrc = deck.cards[i] || '';
                     const cardImg = obj.el.querySelector('.card-image');
                     const cardName = obj.el.querySelector('.name');
+                    
                     if (imgSrc) { 
                         cardImg.src = imgSrc; 
                         cardImg.style.display = 'block'; 
                         cardName.style.display = 'none'; 
-                    } 
-                    else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
+                    } else { 
+                        cardImg.src = ''; 
+                        cardImg.style.display = 'none'; 
+                        cardName.style.display = 'block'; 
+                    }
                 });
                 
                 if (btnElement) {
                     const originalHTML = btnElement.innerHTML;
                     btnElement.innerHTML = '<span style="font-size: 11px; font-weight: bold; padding: 0 4px;">已应用</span>';
-                    btnElement.style.width = 'auto'; btnElement.classList.add('active');
+                    btnElement.style.width = 'auto'; 
+                    btnElement.classList.add('active');
                     setTimeout(() => { renderDeckList(); }, 800);
-                } else { renderDeckList(); }
+                } else { 
+                    renderDeckList(); 
+                }
             });
-        } 
-                else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
-            });
-            if (btnElement) {
-                const originalHTML = btnElement.innerHTML;
-                btnElement.innerHTML = '<span style="font-size: 11px; font-weight: bold; padding: 0 4px;">已应用</span>';
-                btnElement.style.width = 'auto'; btnElement.classList.add('active');
-                setTimeout(() => { renderDeckList(); }, 800);
-            } else { renderDeckList(); }
         }
+
         function openEditView(deckId) {
             editingDeckId = deckId;
             document.getElementById('deck-list-view').style.display = 'none';
