@@ -536,6 +536,20 @@
     </style>
 </head>
 <body>
+<!-- ================= 新增：灵性能量加载屏 ================= -->
+    <div id="magic-loader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: var(--bg-light); z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease-out;">
+        <div style="width: 80px; height: 80px; color: var(--accent); animation: spin 3s linear infinite;">
+            <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="100" cy="100" r="90" stroke-dasharray="4 6"></circle>
+                <circle cx="100" cy="100" r="75"></circle>
+                <polygon points="100,25 115,85 175,100 115,115 100,175 85,115 25,100 85,85"></polygon>
+                <circle cx="100" cy="100" r="25"></circle>
+            </svg>
+        </div>
+        <div id="loader-text" style="margin-top: 24px; font-size: 13px; font-weight: bold; color: var(--text-main); letter-spacing: 2px;">正在同步灵性能量... 0%</div>
+        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+    </div>
+    <!-- ======================================================= -->
 
     <!-- 升级美化：全局复古纸张纹理与环境暗角 -->
     <div class="texture-overlay"></div>
@@ -1586,17 +1600,31 @@
         }
         function applyDeck(id, btnElement) {
             if (activeDeckId === id) return; 
-            activeDeckId = id;
             const deck = decks.find(d => d.id === id);
-            cardObjs.forEach((obj, i) => {
-                const imgSrc = deck.cards[i] || '';
-                const cardImg = obj.el.querySelector('.card-image');
-                const cardName = obj.el.querySelector('.name');
-                if (imgSrc) { 
-                    cardImg.src = imgSrc; 
-                    cardImg.style.display = 'block'; 
-                    cardName.style.display = 'none'; 
-                } 
+            
+            // 呼出进度条并开始预加载新牌组图片
+            preloadDeckAndRun(deck.cards, () => {
+                activeDeckId = id;
+                cardObjs.forEach((obj, i) => {
+                    const imgSrc = deck.cards[i] || '';
+                    const cardImg = obj.el.querySelector('.card-image');
+                    const cardName = obj.el.querySelector('.name');
+                    if (imgSrc) { 
+                        cardImg.src = imgSrc; 
+                        cardImg.style.display = 'block'; 
+                        cardName.style.display = 'none'; 
+                    } 
+                    else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
+                });
+                
+                if (btnElement) {
+                    const originalHTML = btnElement.innerHTML;
+                    btnElement.innerHTML = '<span style="font-size: 11px; font-weight: bold; padding: 0 4px;">已应用</span>';
+                    btnElement.style.width = 'auto'; btnElement.classList.add('active');
+                    setTimeout(() => { renderDeckList(); }, 800);
+                } else { renderDeckList(); }
+            });
+        } 
                 else { cardImg.src = ''; cardImg.style.display = 'none'; cardName.style.display = 'block'; }
             });
             if (btnElement) {
@@ -1923,7 +1951,50 @@
                 else { obj.status = 'hidden'; obj.el.style.display = 'none'; obj.el.classList.remove('is-fanned'); track.appendChild(obj.el); }
             }, 500);
         }
-        window.onload = init;
-    </script>
+        // ================= 新增：预加载引擎逻辑 =================
+        function preloadDeckAndRun(deckCards, onComplete) {
+            const loader = document.getElementById('magic-loader');
+            const loaderText = document.getElementById('loader-text');
+            loader.style.display = 'flex';
+            // 稍微延迟确保 CSS display 先生效，从而触发透明度动画
+            requestAnimationFrame(() => { loader.style.opacity = '1'; });
+            
+            let loaded = 0;
+            // 过滤掉没有配置图片的空牌
+            let validCards = deckCards.filter(src => src); 
+            let total = validCards.length;
+            
+            // 如果是空牌组，直接秒进
+            if(total === 0) { finishLoad(); return; }
+
+            function finishLoad() {
+                loaderText.innerText = "能量同步完成 100%";
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; onComplete(); }, 600);
+                }, 300); // 停顿0.3秒让用户看清100%
+            }
+
+            // 并发下载图片并监听进度
+            validCards.forEach(src => {
+                const img = new Image();
+                img.onload = img.onerror = () => {
+                    loaded++;
+                    let percent = Math.floor((loaded / total) * 100);
+                    loaderText.innerText = `正在同步灵性能量... ${percent}%`;
+                    if(loaded === total) finishLoad();
+                };
+                img.src = src;
+            });
+        }
+
+        // 接管网页启动，先预加载默认牌，再铺开桌面
+        window.onload = () => {
+            const currentDeck = decks.find(d => d.id === activeDeckId) || decks[0];
+            preloadDeckAndRun(currentDeck.cards, () => {
+                init();
+            });
+        };
+        // =======================================================    </script>
 </body>
 </html>
