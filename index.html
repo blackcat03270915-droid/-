@@ -1964,7 +1964,7 @@ if (actualSrc && cardImg.style.display !== 'none') {
                 else { obj.status = 'hidden'; obj.el.style.display = 'none'; obj.el.classList.remove('is-fanned'); track.appendChild(obj.el); }
             }, 500);
         }
-       // ================= 终极优化：懒加载 + 仪式感版 =================
+       // ================= 终极优化：开局秒进 + 后台静默预读 =================
         function preloadDeckAndRun(deckCards, onComplete) {
             const loader = document.getElementById('magic-loader');
             const loaderText = document.getElementById('loader-text');
@@ -1972,7 +1972,7 @@ if (actualSrc && cardImg.style.display !== 'none') {
             loaderText.innerText = "正在链接潜意识...";
             requestAnimationFrame(() => { loader.style.opacity = '1'; });
             
-            // 【核心】：直接铺场，不准等待下载
+            // 【核心1】：瞬间铺开桌面，绝不让用户等下载
             onComplete();
 
             // 仪式感计时器：1.2秒后揭幕
@@ -1983,6 +1983,27 @@ if (actualSrc && cardImg.style.display !== 'none') {
                     setTimeout(() => { loader.style.display = 'none'; }, 600);
                 }, 400);
             }, 1200); 
+            
+            // 【核心2：静默预读黑科技】
+            // 等用户进入桌面、正在洗牌的时候（延迟 2 秒启动，避开开局动画的性能消耗）
+            setTimeout(() => {
+                let validCards = deckCards.filter(src => src);
+                let currentIndex = 0;
+                
+                // 递归函数：排队悄悄下载图片到手机本地缓存
+                function loadNextSilent() {
+                    if (currentIndex >= validCards.length) return; // 全部偷渡完毕
+                    const img = new Image();
+                    // 这张下完了，立刻无缝衔接去下下一张
+                    img.onload = img.onerror = loadNextSilent; 
+                    img.src = validCards[currentIndex++];
+                }
+                
+                // 只开启 3 个“偷渡通道”，既能快速下完 2.2MB，又绝对不会卡死手机网络
+                for (let i = 0; i < Math.min(3, validCards.length); i++) {
+                    loadNextSilent();
+                }
+            }, 2000); 
         }
 
         // 接管启动
@@ -1992,6 +2013,6 @@ if (actualSrc && cardImg.style.display !== 'none') {
                 init(); 
             });
         };
-        // ======================================================== </script>
+        // ======================================================= </script>
 </body>
 </html>
