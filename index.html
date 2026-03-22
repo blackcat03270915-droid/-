@@ -1950,31 +1950,33 @@
                 else { obj.status = 'hidden'; obj.el.style.display = 'none'; obj.el.classList.remove('is-fanned'); track.appendChild(obj.el); }
             }, 500);
         }
-        // ================= 新增：预加载引擎逻辑 =================
+        // ================= 新增：预加载引擎逻辑（并发极速版） =================
         function preloadDeckAndRun(deckCards, onComplete) {
             const loader = document.getElementById('magic-loader');
             const loaderText = document.getElementById('loader-text');
             loader.style.display = 'flex';
-            // 稍微延迟确保 CSS display 先生效，从而触发透明度动画
             requestAnimationFrame(() => { loader.style.opacity = '1'; });
             
+            // 【核心颠覆】：幕布刚一拉上，立刻在后台执行换牌和铺设动作！
+            // 这会让浏览器直接开启“边下载、边解压、边贴图”的终极并发模式。
+            onComplete();
+            
             let loaded = 0;
-            // 过滤掉没有配置图片的空牌
             let validCards = deckCards.filter(src => src); 
             let total = validCards.length;
             
-            // 如果是空牌组，直接秒进
             if(total === 0) { finishLoad(); return; }
 
             function finishLoad() {
                 loaderText.innerText = "能量同步完成 100%";
+                // 因为贴图已经在下载时被显卡同步干完了，这里不需要再苦等了，直接优雅揭幕！
                 setTimeout(() => {
                     loader.style.opacity = '0';
-                    setTimeout(() => { loader.style.display = 'none'; onComplete(); }, 600);
-                }, 300); // 停顿0.3秒让用户看清100%
+                    setTimeout(() => { loader.style.display = 'none'; }, 600);
+                }, 300); 
             }
 
-            // 并发下载图片并监听进度
+            // 进度条现在只负责在旁边“监工”计件
             validCards.forEach(src => {
                 const img = new Image();
                 img.onload = img.onerror = () => {
@@ -1994,6 +1996,6 @@
                 init();
             });
         };
-        // =======================================================    </script>
+        // =======================================================   </script>
 </body>
 </html>
